@@ -78,9 +78,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-center mt-8">
+                    <div class="flex flex-col sm:flex-row justify-center items-center mt-8 gap-4">
                         <button type="button" onclick="validateAndNext(2, 'step-1')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-full sm:w-auto shadow-md">
                             Mula Kaji Selidik
+                        </button>
+                        <button type="button" onclick="showDashboard()" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-8 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 w-full sm:w-auto shadow-sm">
+                            Lihat Dashboard Admin
                         </button>
                     </div>
                 </div>
@@ -285,7 +288,7 @@
                 <h1 class="text-3xl font-bold text-gray-800">NBDY Admin Dashboard</h1>
                 <p class="text-gray-500">Live Customer Feedback Overview</p>
             </div>
-            <button onclick="location.reload()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition shadow-sm">
+            <button onclick="startNewSurvey()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition shadow-sm">
                 + Borang Baru
             </button>
         </div>
@@ -294,21 +297,18 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-t-4 border-t-indigo-500">
                 <p class="text-gray-500 text-sm font-medium">Jumlah Responden (Total)</p>
-                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="stat-total">1,204</h3>
-                <p class="text-green-500 text-sm mt-2 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-                    +1 Baru
-                </p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="stat-total">0</h3>
+                <p class="text-gray-400 text-sm mt-2">Responden setakat ini</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-t-4 border-t-green-500">
                 <p class="text-gray-500 text-sm font-medium">Kadar Repeat Purchase</p>
-                <h3 class="text-3xl font-bold text-gray-800 mt-2">68%</h3>
+                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="stat-repeat">0%</h3>
                 <p class="text-gray-400 text-sm mt-2">Berdasarkan data terkini</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500">
-                <p class="text-gray-500 text-sm font-medium">Platform Pilihan (Lain)</p>
-                <h3 class="text-3xl font-bold text-gray-800 mt-2">TikTok Shop</h3>
-                <p class="text-gray-400 text-sm mt-2">Trend tertinggi bulan ini</p>
+                <p class="text-gray-500 text-sm font-medium">Platform Pilihan (Top)</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="stat-platform">-</h3>
+                <p class="text-gray-400 text-sm mt-2">Paling kerap dipilih</p>
             </div>
         </div>
 
@@ -345,45 +345,11 @@
                             <th class="p-4 font-medium">Masih Guna?</th>
                             <th class="p-4 font-medium">Isu Website</th>
                             <th class="p-4 font-medium">Cadangan Win-back</th>
+                            <th class="p-4 font-medium text-center">Tindakan</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-700 text-sm divide-y divide-gray-100">
-                        <tr class="bg-indigo-50/30 hover:bg-indigo-50 transition">
-                            <td class="p-4 font-medium text-gray-900">
-                                <div id="tb-name" class="font-bold">-</div>
-                                <div id="tb-phone" class="text-xs text-gray-500 font-normal mt-1">-</div>
-                            </td>
-                            <td class="p-4 font-medium text-indigo-700" id="tb-last-purchase">-</td>
-                            <td class="p-4" id="tb-repeat">-</td>
-                            <td class="p-4">
-                                <span id="tb-still-using" class="px-2 py-1 bg-gray-200 text-gray-800 rounded-md text-xs font-semibold">-</span>
-                            </td>
-                            <td class="p-4 max-w-xs truncate" id="tb-website" title="">-</td>
-                            <td class="p-4 max-w-xs truncate" id="tb-winback" title="">-</td>
-                        </tr>
-                        <!-- Dummy Data for visual -->
-                        <tr>
-                            <td class="p-4">
-                                <div class="font-bold text-gray-900">Siti Aminah</div>
-                                <div class="text-xs text-gray-500 font-normal mt-1">019-8765432</div>
-                            </td>
-                            <td class="p-4">1-3 bulan lepas</td>
-                            <td class="p-4">TikTok Shop</td>
-                            <td class="p-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold">Ya</span></td>
-                            <td class="p-4 max-w-xs truncate">Loading lambat masa nak bayar</td>
-                            <td class="p-4 max-w-xs truncate">Bagi lebih banyak free shipping</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">
-                                <div class="font-bold text-gray-900">Ahmad Fauzi</div>
-                                <div class="text-xs text-gray-500 font-normal mt-1">013-1234567</div>
-                            </td>
-                            <td class="p-4">Lebih 6 bulan</td>
-                            <td class="p-4">Tidak</td>
-                            <td class="p-4"><span class="px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold">Tidak</span></td>
-                            <td class="p-4 max-w-xs truncate">Tiada isu</td>
-                            <td class="p-4 max-w-xs truncate">Diskaun untuk returning customer</td>
-                        </tr>
+                    <tbody id="table-body" class="text-gray-700 text-sm divide-y divide-gray-100">
+                        <!-- Data akan dimasukkan di sini secara automatik oleh JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -393,7 +359,10 @@
     <script>
         const totalSteps = 5; // Total logic steps (excluding success)
         let currentStep = 1;
-        let submittedData = {}; // Data storage for dashboard
+        
+        let allSubmissions = []; // Menyimpan kesemua data borang dalam memori
+        let platformChartInstance = null;
+        let triggerChartInstance = null;
 
         // Custom validation function before moving to next step
         function validateAndNext(targetStep, currentStepId) {
@@ -517,21 +486,43 @@
         function submitSurvey() {
             const form = document.getElementById('surveyForm');
             const formData = new FormData(form);
+            let currentSubmission = {};
             
-            // Collect form data into object
+            // Collect form data into object (Menguruskan checkbox / nilai berganda)
             for (let [key, value] of formData.entries()) {
-                if (submittedData[key]) {
-                    if (!Array.isArray(submittedData[key])) {
-                        submittedData[key] = [submittedData[key]];
+                if (currentSubmission[key]) {
+                    if (!Array.isArray(currentSubmission[key])) {
+                        currentSubmission[key] = [currentSubmission[key]];
                     }
-                    submittedData[key].push(value);
+                    currentSubmission[key].push(value);
                 } else {
-                    submittedData[key] = value;
+                    currentSubmission[key] = value;
                 }
             }
 
+            // Masukkan data baru ke dalam array senarai borang
+            allSubmissions.push(currentSubmission);
+
             // Show success screen (Step 6)
             nextStep(6);
+            form.reset(); // Kosongkan borang untuk isian seterusnya
+        }
+
+        function startNewSurvey() {
+            document.getElementById('surveyForm').reset(); // Pastikan borang dikosongkan semula
+            document.getElementById('dashboard-container').classList.add('hidden');
+            document.getElementById('survey-main-card').classList.remove('hidden');
+            
+            // Kembali ke Step 1
+            document.querySelectorAll('.survey-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step-1').classList.remove('hidden');
+            currentStep = 1;
+            updateProgress();
+            
+            // Sembunyikan semula field bersyarat (Dynamic fields)
+            document.getElementById('repeatPlatformSection').classList.add('hidden');
+            document.getElementById('noRepeatReasonSection').classList.add('hidden');
+            document.getElementById('notUsingReasonSection').classList.add('hidden');
         }
 
         function showDashboard() {
@@ -542,51 +533,116 @@
             const dash = document.getElementById('dashboard-container');
             dash.classList.remove('hidden');
             
-            // Populate table with latest data
-            document.getElementById('tb-name').innerText = submittedData.customerName || 'Tiada Nama';
-            document.getElementById('tb-phone').innerText = submittedData.customerPhone || '-';
-            
-            document.getElementById('tb-last-purchase').innerText = submittedData.lastPurchase || '-';
-            
-            let repeatText = 'Tidak (No Repeat)';
-            if (submittedData.hasRepeatOrder === 'yes') {
-                repeatText = submittedData.repeatPlatform || 'Website';
-                if (repeatText === 'Other' && submittedData.otherPlatformInput) {
-                    repeatText = `Lain: ${submittedData.otherPlatformInput}`;
-                }
-            }
-            document.getElementById('tb-repeat').innerText = repeatText;
-            
-            const stillUsingBadge = document.getElementById('tb-still-using');
-            if(submittedData.stillUsing === 'yes') {
-                stillUsingBadge.innerText = 'Ya';
-                stillUsingBadge.className = 'px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold';
-            } else {
-                stillUsingBadge.innerText = 'Tidak';
-                stillUsingBadge.className = 'px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold';
-            }
-
-            document.getElementById('tb-website').innerText = submittedData.websiteExperience || '-';
-            document.getElementById('tb-website').title = submittedData.websiteExperience || '';
-            document.getElementById('tb-winback').innerText = submittedData.winBackIdea || '-';
-            document.getElementById('tb-winback').title = submittedData.winBackIdea || '';
-
-            // Initialize Dashboard Charts
-            initCharts();
+            updateDashboardUI();
         }
 
-        function initCharts() {
+        function updateDashboardUI() {
+            const total = allSubmissions.length;
+            document.getElementById('stat-total').innerText = total;
+
+            let repeatCount = 0;
+            let platforms = {};
+            let triggers = {
+                'Better price/promotion': 0, 'Voucher': 0, 'Free shipping': 0,
+                'TikTok Live': 0, 'Reminder': 0, 'Product benefits': 0,
+                'Stock running out': 0, 'Easier ordering': 0
+            };
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = ''; // Kosongkan jadual lama
+
+            // Hasilkan baris (Row) untuk setiap survey yang dimasukkan
+            allSubmissions.forEach((sub, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "bg-indigo-50/30 hover:bg-indigo-50 transition";
+                
+                let repeatText = 'Tidak (No Repeat)';
+                if (sub.hasRepeatOrder === 'yes') {
+                    repeatCount++;
+                    repeatText = sub.repeatPlatform || 'Website';
+                    if (repeatText === 'Other' && sub.otherPlatformInput) {
+                        repeatText = `Lain: ${sub.otherPlatformInput}`;
+                    }
+                    
+                    // Rekod statistik platform
+                    let platKey = sub.repeatPlatform || 'Website';
+                    platforms[platKey] = (platforms[platKey] || 0) + 1;
+                }
+
+                // Rekod statistik triggers (Punca pembelian)
+                if (sub.reorderTrigger) {
+                    let subTriggers = Array.isArray(sub.reorderTrigger) ? sub.reorderTrigger : [sub.reorderTrigger];
+                    subTriggers.forEach(t => {
+                        if (triggers[t] !== undefined) triggers[t]++;
+                    });
+                }
+
+                let stillUsingBadge = sub.stillUsing === 'yes' 
+                    ? `<span class="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold">Ya</span>`
+                    : `<span class="px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold">Tidak</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-4 font-medium text-gray-900">
+                        <div class="font-bold">${sub.customerName || '-'}</div>
+                        <div class="text-xs text-gray-500 font-normal mt-1">${sub.customerPhone || '-'}</div>
+                    </td>
+                    <td class="p-4 font-medium text-indigo-700">${sub.lastPurchase || '-'}</td>
+                    <td class="p-4">${repeatText}</td>
+                    <td class="p-4">${stillUsingBadge}</td>
+                    <td class="p-4 max-w-xs truncate" title="${sub.websiteExperience || ''}">${sub.websiteExperience || '-'}</td>
+                    <td class="p-4 max-w-xs truncate" title="${sub.winBackIdea || ''}">${sub.winBackIdea || '-'}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteRow(this, ${index})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition" title="Padam Rekod">
+                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Kira peratusan Repeat Order
+            const repeatRate = total > 0 ? Math.round((repeatCount / total) * 100) : 0;
+            document.getElementById('stat-repeat').innerText = `${repeatRate}%`;
+
+            // Cari Platform Paling Top
+            let topPlatform = "-";
+            let maxCount = 0;
+            for (let p in platforms) {
+                if (platforms[p] > maxCount) {
+                    maxCount = platforms[p];
+                    topPlatform = p;
+                }
+            }
+            document.getElementById('stat-platform').innerText = topPlatform;
+
+            // Update Data untuk Carta
+            const platformData = [
+                platforms['Website'] || 0,
+                platforms['TikTok Shop'] || 0,
+                platforms['Shopee'] || 0,
+                platforms['Other'] || 0
+            ];
+            
+            const triggerData = [
+                triggers['Better price/promotion'] || 0,
+                triggers['Voucher'] || 0,
+                triggers['Free shipping'] || 0,
+                triggers['TikTok Live'] || 0,
+                triggers['Reminder'] || 0,
+                triggers['Product benefits'] || 0
+            ];
+
+            initCharts(platformData, triggerData);
+        }
+
+        function initCharts(platformData, triggerData) {
+            // Hapus carta lama jika ada supaya tidak bertindih (bug grafik)
+            if (platformChartInstance) platformChartInstance.destroy();
+            if (triggerChartInstance) triggerChartInstance.destroy();
+
             // Chart 1: Platform Pie Chart
             const ctxPie = document.getElementById('platformChart').getContext('2d');
-            
-            // Dynamic data injection logic (mocking increment based on submission)
-            let platformData = [45, 30, 15, 10]; // Base dummy data
-            if(submittedData.repeatPlatform === 'Website') platformData[0]++;
-            if(submittedData.repeatPlatform === 'TikTok Shop') platformData[1]++;
-            if(submittedData.repeatPlatform === 'Shopee') platformData[2]++;
-            if(submittedData.repeatPlatform === 'Agent') platformData[3]++;
-
-            new Chart(ctxPie, {
+            platformChartInstance = new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
                     labels: ['Website', 'TikTok Shop', 'Shopee', 'Other'],
@@ -599,22 +655,20 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    },
+                    plugins: { legend: { position: 'bottom' } },
                     cutout: '70%'
                 }
             });
 
             // Chart 2: Triggers Bar Chart
             const ctxBar = document.getElementById('triggerChart').getContext('2d');
-            new Chart(ctxBar, {
+            triggerChartInstance = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
                     labels: ['Promo/Price', 'Voucher', 'Free Ship', 'TikTok Live', 'Reminder', 'Benefits'],
                     datasets: [{
                         label: 'Kekerapan Dipilih',
-                        data: [120, 95, 110, 60, 45, 80],
+                        data: triggerData,
                         backgroundColor: '#6366f1',
                         borderRadius: 6
                     }]
@@ -623,14 +677,26 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
+                        y: { beginAtZero: true, grid: { display: false }, ticks: { stepSize: 1 } },
                         x: { grid: { display: false } }
                     },
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
+        }
+
+        // Fungsi memadam baris dari sistem memori & UI Dashboard
+        function deleteRow(btn, index) {
+            const row = btn.closest('tr');
+            
+            // Animasi hilangkan baris
+            row.style.transition = "all 0.3s ease";
+            row.style.opacity = "0";
+            
+            setTimeout(() => {
+                allSubmissions.splice(index, 1); // Buang data dari memori (array)
+                updateDashboardUI(); // Render semula dashboard (Auto kira balik stat)
+            }, 300);
         }
     </script>
 </body>
