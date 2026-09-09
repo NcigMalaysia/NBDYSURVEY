@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBDY Customer Feedback Survey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* Custom radio button styling */
+        input[type="radio"] {
+            accent-color: #4f46e5;
+        }
+        input[type="checkbox"] {
+            accent-color: #4f46e5;
+        }
+        /* Extra styles for dashboard */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 py-10">
+
+    <div id="survey-main-card" class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden transition-all duration-500">
+        
+        <!-- Header -->
+        <div class="bg-indigo-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold tracking-wider">NBDY</h1>
+            <p class="text-indigo-100 mt-2">Customer Experience Feedback</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-200 h-2">
+            <div id="progress-bar" class="bg-indigo-500 h-2 transition-all duration-300 ease-out" style="width: 10%;"></div>
+        </div>
+
+        <!-- Survey Content Area -->
+        <div class="p-8">
+            <form id="surveyForm" onsubmit="event.preventDefault(); submitSurvey();">
+                
+                <!-- Opening (Step 1) -->
+                <div id="step-1" class="survey-step fade-in">
+                    <div class="mb-6 text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 mb-4">
+                            <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-2">Hi, kami dari NBDY.</h2>
+                        <p class="text-gray-600 leading-relaxed">
+                            Kami tengah buat a short customer feedback untuk understand your experience dengan product kami. Tak ambil masa lama, dalam 2–3 minit sahaja ya 😊
+                        </p>
+                        
+                        <div class="mt-8 text-left max-w-md mx-auto bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-inner">
+                            <h3 class="text-md font-semibold text-gray-700 mb-4">Sila isikan maklumat anda:</h3>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-medium mb-2">Nama Pelanggan <span class="text-red-500">*</span></label>
+                                <input type="text" name="customerName" id="customerName" required placeholder="Masukkan nama anda..." class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2">Nombor Telefon <span class="text-red-500">*</span></label>
+                                <input type="tel" name="customerPhone" id="customerPhone" required placeholder="Contoh: 0123456789" class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center mt-8">
+                        <button type="button" onclick="validateAndNext(2, 'step-1')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-full sm:w-auto shadow-md">
+                            Mula Kaji Selidik
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Q1 & Q2: Last Purchase & Repeat (Step 2) -->
+                <div id="step-2" class="survey-step hidden fade-in">
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4">1. Last purchase</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-2 font-medium text-lg">“Boleh saya confirm, last time you beli product kami bila ya? Masih ingat lebih kurang?”</label>
+                        <select id="lastPurchase" name="lastPurchase" required class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition">
+                            <option value="" disabled selected>Pilih anggaran masa</option>
+                            <option value="Kurang dari sebulan">Kurang dari sebulan lepas</option>
+                            <option value="1-3 bulan lepas">1-3 bulan lepas</option>
+                            <option value="3-6 bulan lepas">3-6 bulan lepas</option>
+                            <option value="Lebih 6 bulan">Lebih 6 bulan lepas</option>
+                            <option value="Tak ingat">Tak ingat</option>
+                        </select>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4 mt-8">2. Repeat purchase</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-3 font-medium text-lg">“Lepas pembelian terakhir tu, ada repeat order lagi tak?”</label>
+                        <div class="space-y-3">
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="radio" name="hasRepeatOrder" value="yes" onchange="handleRepeatLogic(true)" required class="w-5 h-5 text-indigo-600">
+                                <span class="ml-3 text-gray-700 font-medium">Ya (Yes)</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="radio" name="hasRepeatOrder" value="no" onchange="handleRepeatLogic(false)" required class="w-5 h-5 text-indigo-600">
+                                <span class="ml-3 text-gray-700 font-medium">Tidak (No)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic field: If YES -->
+                    <div id="repeatPlatformSection" class="hidden mb-6 pl-4 border-l-4 border-indigo-500 mt-4 fade-in bg-indigo-50 p-4 rounded-r-lg">
+                        <label class="block text-gray-800 mb-2 font-medium">“Repeat order dekat mana ya — website kami, TikTok Shop, Shopee, atau platform lain?”</label>
+                        <select id="repeatPlatform" name="repeatPlatform" onchange="handlePlatformLogic()" class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 outline-none mb-3">
+                            <option value="" disabled selected>Pilih platform</option>
+                            <option value="Website">Website kami</option>
+                            <option value="TikTok Shop">TikTok Shop</option>
+                            <option value="Shopee">Shopee</option>
+                            <option value="Other">Platform lain</option>
+                        </select>
+                        <input type="text" id="otherPlatformInput" name="otherPlatformInput" placeholder="Sila nyatakan platform lain tersebut..." class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 outline-none hidden transition">
+                    </div>
+
+                    <!-- Dynamic field: If NO -->
+                    <div id="noRepeatReasonSection" class="hidden mb-6 pl-4 border-l-4 border-red-500 mt-4 fade-in bg-red-50 p-4 rounded-r-lg">
+                        <label class="block text-gray-800 mb-2 font-medium">“Okay, boleh saya tahu apa sebab utama you tak repeat order sampai sekarang?”</label>
+                        <textarea id="noRepeatReason" name="noRepeatReason" rows="3" placeholder="Sila nyatakan sebab anda..." class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <div class="flex justify-between mt-8">
+                        <button type="button" onclick="prevStep(1)" class="text-gray-500 hover:text-gray-700 font-medium px-4 py-2 rounded">Kembali</button>
+                        <button type="button" onclick="validateAndNext(3, 'step-2')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">Seterusnya</button>
+                    </div>
+                </div>
+
+                <!-- Q3: If bought elsewhere (Step 3 - Conditional) -->
+                <div id="step-3" class="survey-step hidden fade-in">
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4">3. If they bought elsewhere</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-3 font-medium text-lg">“Apa yang buat you pilih untuk beli dekat platform tu instead of website kami?”</label>
+                        <p class="text-sm text-gray-500 mb-3">(Boleh pilih lebih dari satu)</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="checkbox" name="whyOtherPlatform" value="TikTok voucher/discount" class="mt-1 w-5 h-5 text-indigo-600 rounded">
+                                <span class="ml-3 text-gray-700">TikTok voucher/discount</span>
+                            </label>
+                            <label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="checkbox" name="whyOtherPlatform" value="Free shipping" class="mt-1 w-5 h-5 text-indigo-600 rounded">
+                                <span class="ml-3 text-gray-700">Free shipping</span>
+                            </label>
+                            <label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="checkbox" name="whyOtherPlatform" value="Easier/convenient" class="mt-1 w-5 h-5 text-indigo-600 rounded">
+                                <span class="ml-3 text-gray-700">Easier/convenient</span>
+                            </label>
+                            <label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="checkbox" name="whyOtherPlatform" value="Saw TikTok Live" class="mt-1 w-5 h-5 text-indigo-600 rounded">
+                                <span class="ml-3 text-gray-700">Saw TikTok Live</span>
+                            </label>
+                            <label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="checkbox" name="whyOtherPlatform" value="Affiliate/influencer" class="mt-1 w-5 h-5 text-indigo-600 rounded">
+                                <span class="ml-3 text-gray-700">Affiliate/influencer</span>
+                            </label>
+                            <label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="checkbox" name="whyOtherPlatform" value="Platform preference" class="mt-1 w-5 h-5 text-indigo-600 rounded">
+                                <span class="ml-3 text-gray-700">Platform preference</span>
+                            </label>
+                            <label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition sm:col-span-2">
+                                <input type="checkbox" name="whyOtherPlatform" value="Other" class="mt-1 w-5 h-5 text-indigo-600 rounded">
+                                <span class="ml-3 text-gray-700">Other (Lain-lain)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between mt-8">
+                        <button type="button" onclick="prevStep(2)" class="text-gray-500 hover:text-gray-700 font-medium px-4 py-2 rounded">Kembali</button>
+                        <button type="button" onclick="nextStep(4)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">Seterusnya</button>
+                    </div>
+                </div>
+
+                <!-- Q4 & Q5: Product Usage & Experience (Step 4) -->
+                <div id="step-4" class="survey-step hidden fade-in">
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4">4. If stopped using</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-3 font-medium text-lg">“Sekarang masih guna product kami lagi tak?”</label>
+                        <div class="flex space-x-4">
+                            <label class="flex-1 flex items-center justify-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="radio" name="stillUsing" value="yes" onchange="handleStillUsingLogic(true)" required class="mr-2 w-5 h-5 text-indigo-600">
+                                <span class="font-medium">Ya (Yes)</span>
+                            </label>
+                            <label class="flex-1 flex items-center justify-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition">
+                                <input type="radio" name="stillUsing" value="no" onchange="handleStillUsingLogic(false)" required class="mr-2 w-5 h-5 text-indigo-600">
+                                <span class="font-medium">Tidak (No)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic field: If NOT using -->
+                    <div id="notUsingReasonSection" class="hidden mb-6 pl-4 border-l-4 border-amber-500 mt-4 fade-in bg-amber-50 p-4 rounded-r-lg">
+                        <label class="block text-gray-800 mb-2 font-medium">“Boleh tahu kenapa dah tak guna?”</label>
+                        <textarea id="notUsingReason" name="notUsingReason" rows="2" placeholder="Sila nyatakan sebab..." class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4 mt-8">5. Product experience</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-2 font-medium text-lg">“Masa you guna product tu, overall experience macam mana? Ada apa-apa issue atau reason yang buat you tak nak continue?”</label>
+                        <textarea name="productExperience" rows="4" required placeholder="Ceritakan pengalaman dan isu (jika ada)..." class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <div class="flex justify-between mt-8">
+                        <button type="button" onclick="determinePrevStepFrom4()" class="text-gray-500 hover:text-gray-700 font-medium px-4 py-2 rounded">Kembali</button>
+                        <button type="button" onclick="validateAndNext(5, 'step-4')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">Seterusnya</button>
+                    </div>
+                </div>
+
+                <!-- Q6, Q7, Q8: Triggers, Website & Win-back (Step 5) -->
+                <div id="step-5" class="survey-step hidden fade-in">
+                    
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4">6. Reordering trigger</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-3 font-medium text-lg">“Apa yang biasanya akan buat you decide untuk beli semula product ni?”</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="Better price/promotion" class="mr-3 w-5 h-5 text-indigo-600 rounded">Better price/promotion</label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="Voucher" class="mr-3 w-5 h-5 text-indigo-600 rounded">Voucher</label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="Free shipping" class="mr-3 w-5 h-5 text-indigo-600 rounded">Free shipping</label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="TikTok Live" class="mr-3 w-5 h-5 text-indigo-600 rounded">TikTok Live</label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="Reminder" class="mr-3 w-5 h-5 text-indigo-600 rounded">Reminder</label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="Product benefits" class="mr-3 w-5 h-5 text-indigo-600 rounded">Product benefits</label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="Stock running out" class="mr-3 w-5 h-5 text-indigo-600 rounded">Stock running out</label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition"><input type="checkbox" name="reorderTrigger" value="Easier ordering" class="mr-3 w-5 h-5 text-indigo-600 rounded">Easier ordering</label>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4 mt-8">7. Website experience</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-2 font-medium text-lg">“Masa last order dekat website, ada apa-apa issue tak dengan website atau ordering process?”</label>
+                        <textarea name="websiteExperience" rows="3" required placeholder="Nyatakan isu anda..." class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-indigo-600 mb-4 mt-8">8. Win-back question</h3>
+                    <div class="mb-6">
+                        <label class="block text-gray-800 mb-2 font-medium text-lg">“Kalau kami nak buat you consider beli semula, apa satu benda yang you rasa kami patut improve atau offer?”</label>
+                        <textarea name="winBackIdea" rows="3" required placeholder="Satu perkara yang patut di-improve / ditawarkan..." class="w-full border border-gray-300 rounded-lg p-3 focus:border-indigo-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <div class="flex justify-between mt-8">
+                        <button type="button" onclick="prevStep(4)" class="text-gray-500 hover:text-gray-700 font-medium px-4 py-2 rounded">Kembali</button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-lg transition-colors flex items-center shadow-lg">
+                            Hantar Kaji Selidik
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Success Message (Step 6) -->
+                <div id="step-6" class="survey-step hidden fade-in text-center py-10">
+                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-100 mb-6">
+                        <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Terima Kasih!</h2>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                        Maklum balas anda telah berjaya direkodkan.
+                    </p>
+                    <button type="button" onclick="showDashboard()" class="bg-gray-800 hover:bg-gray-900 text-white font-medium py-3 px-8 rounded-lg transition-colors shadow-lg">
+                        Buka Papan Pemuka (Admin Dashboard)
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-container" class="hidden w-full max-w-6xl fade-in mt-4 mb-10">
+        
+        <!-- Dash Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">NBDY Admin Dashboard</h1>
+                <p class="text-gray-500">Live Customer Feedback Overview</p>
+            </div>
+            <button onclick="location.reload()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition shadow-sm">
+                + Borang Baru
+            </button>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-t-4 border-t-indigo-500">
+                <p class="text-gray-500 text-sm font-medium">Jumlah Responden (Total)</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="stat-total">1,204</h3>
+                <p class="text-green-500 text-sm mt-2 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                    +1 Baru
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-t-4 border-t-green-500">
+                <p class="text-gray-500 text-sm font-medium">Kadar Repeat Purchase</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-2">68%</h3>
+                <p class="text-gray-400 text-sm mt-2">Berdasarkan data terkini</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500">
+                <p class="text-gray-500 text-sm font-medium">Platform Pilihan (Lain)</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-2">TikTok Shop</h3>
+                <p class="text-gray-400 text-sm mt-2">Trend tertinggi bulan ini</p>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Chart 1: Platform -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Platform Repeat Order Terkini</h3>
+                <div class="relative h-64 w-full flex justify-center">
+                    <canvas id="platformChart"></canvas>
+                </div>
+            </div>
+            <!-- Chart 2: Triggers -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Punca Pembelian Semula (Triggers)</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="triggerChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Submission Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-800">Maklum Balas Terkini (Baru Masuk)</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white text-gray-500 text-sm border-b">
+                            <th class="p-4 font-medium min-w-[150px]">Pelanggan</th>
+                            <th class="p-4 font-medium">Pembelian Terakhir</th>
+                            <th class="p-4 font-medium">Repeat Platform</th>
+                            <th class="p-4 font-medium">Masih Guna?</th>
+                            <th class="p-4 font-medium">Isu Website</th>
+                            <th class="p-4 font-medium">Cadangan Win-back</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700 text-sm divide-y divide-gray-100">
+                        <tr class="bg-indigo-50/30 hover:bg-indigo-50 transition">
+                            <td class="p-4 font-medium text-gray-900">
+                                <div id="tb-name" class="font-bold">-</div>
+                                <div id="tb-phone" class="text-xs text-gray-500 font-normal mt-1">-</div>
+                            </td>
+                            <td class="p-4 font-medium text-indigo-700" id="tb-last-purchase">-</td>
+                            <td class="p-4" id="tb-repeat">-</td>
+                            <td class="p-4">
+                                <span id="tb-still-using" class="px-2 py-1 bg-gray-200 text-gray-800 rounded-md text-xs font-semibold">-</span>
+                            </td>
+                            <td class="p-4 max-w-xs truncate" id="tb-website" title="">-</td>
+                            <td class="p-4 max-w-xs truncate" id="tb-winback" title="">-</td>
+                        </tr>
+                        <!-- Dummy Data for visual -->
+                        <tr>
+                            <td class="p-4">
+                                <div class="font-bold text-gray-900">Siti Aminah</div>
+                                <div class="text-xs text-gray-500 font-normal mt-1">019-8765432</div>
+                            </td>
+                            <td class="p-4">1-3 bulan lepas</td>
+                            <td class="p-4">TikTok Shop</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold">Ya</span></td>
+                            <td class="p-4 max-w-xs truncate">Loading lambat masa nak bayar</td>
+                            <td class="p-4 max-w-xs truncate">Bagi lebih banyak free shipping</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4">
+                                <div class="font-bold text-gray-900">Ahmad Fauzi</div>
+                                <div class="text-xs text-gray-500 font-normal mt-1">013-1234567</div>
+                            </td>
+                            <td class="p-4">Lebih 6 bulan</td>
+                            <td class="p-4">Tidak</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold">Tidak</span></td>
+                            <td class="p-4 max-w-xs truncate">Tiada isu</td>
+                            <td class="p-4 max-w-xs truncate">Diskaun untuk returning customer</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const totalSteps = 5; // Total logic steps (excluding success)
+        let currentStep = 1;
+        let submittedData = {}; // Data storage for dashboard
+
+        // Custom validation function before moving to next step
+        function validateAndNext(targetStep, currentStepId) {
+            const currentSection = document.getElementById(currentStepId);
+            const requiredFields = currentSection.querySelectorAll('[required]');
+            let isValid = true;
+
+            // Simple custom validation to show native browser tooltips
+            for (let i = 0; i < requiredFields.length; i++) {
+                if (!requiredFields[i].checkValidity()) {
+                    requiredFields[i].reportValidity();
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (isValid) {
+                // Determine logic jump based on step 2
+                if (currentStepId === 'step-2') {
+                    const hasRepeat = document.querySelector('input[name="hasRepeatOrder"]:checked')?.value;
+                    const platform = document.getElementById('repeatPlatform').value;
+                    
+                    if (hasRepeat === 'yes' && platform !== 'Website' && platform !== '') {
+                        // Bought elsewhere, go to step 3
+                        nextStep(3);
+                    } else {
+                        // Skip step 3 (why bought elsewhere) if they bought on website or no repeat
+                        nextStep(4);
+                    }
+                } else {
+                    nextStep(targetStep);
+                }
+            }
+        }
+
+        function nextStep(step) {
+            document.querySelectorAll('.survey-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            currentStep = step;
+            updateProgress();
+        }
+
+        function prevStep(step) {
+            document.querySelectorAll('.survey-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            currentStep = step;
+            updateProgress();
+        }
+
+        function determinePrevStepFrom4() {
+             const hasRepeat = document.querySelector('input[name="hasRepeatOrder"]:checked')?.value;
+             const platform = document.getElementById('repeatPlatform').value;
+             
+             if (hasRepeat === 'yes' && platform !== 'Website' && platform !== '') {
+                 prevStep(3);
+             } else {
+                 prevStep(2);
+             }
+        }
+
+        function updateProgress() {
+            let percentage = ((currentStep - 1) / totalSteps) * 100;
+            if (currentStep === 6) percentage = 100; // Success step
+            document.getElementById('progress-bar').style.width = `${Math.max(10, percentage)}%`;
+        }
+
+        // Logic Handlers
+        function handleRepeatLogic(hasRepeat) {
+            const platformSection = document.getElementById('repeatPlatformSection');
+            const reasonSection = document.getElementById('noRepeatReasonSection');
+            const platformSelect = document.getElementById('repeatPlatform');
+            const reasonTextarea = document.getElementById('noRepeatReason');
+            const otherInput = document.getElementById('otherPlatformInput');
+
+            if (hasRepeat) {
+                platformSection.classList.remove('hidden');
+                platformSelect.setAttribute('required', 'required');
+                
+                reasonSection.classList.add('hidden');
+                reasonTextarea.removeAttribute('required');
+            } else {
+                platformSection.classList.add('hidden');
+                platformSelect.removeAttribute('required');
+                platformSelect.value = ''; // Reset value
+                otherInput.classList.add('hidden');
+                otherInput.removeAttribute('required');
+                otherInput.value = '';
+                
+                reasonSection.classList.remove('hidden');
+                reasonTextarea.setAttribute('required', 'required');
+            }
+        }
+
+        function handlePlatformLogic() {
+            const platformSelect = document.getElementById('repeatPlatform');
+            const otherInput = document.getElementById('otherPlatformInput');
+
+            if (platformSelect.value === 'Other') {
+                otherInput.classList.remove('hidden');
+                otherInput.setAttribute('required', 'required');
+            } else {
+                otherInput.classList.add('hidden');
+                otherInput.removeAttribute('required');
+                otherInput.value = ''; // Reset value
+            }
+        }
+
+        function handleStillUsingLogic(isUsing) {
+            const reasonSection = document.getElementById('notUsingReasonSection');
+            const reasonTextarea = document.getElementById('notUsingReason');
+
+            if (!isUsing) {
+                reasonSection.classList.remove('hidden');
+                reasonTextarea.setAttribute('required', 'required');
+            } else {
+                reasonSection.classList.add('hidden');
+                reasonTextarea.removeAttribute('required');
+            }
+        }
+
+        function submitSurvey() {
+            const form = document.getElementById('surveyForm');
+            const formData = new FormData(form);
+            
+            // Collect form data into object
+            for (let [key, value] of formData.entries()) {
+                if (submittedData[key]) {
+                    if (!Array.isArray(submittedData[key])) {
+                        submittedData[key] = [submittedData[key]];
+                    }
+                    submittedData[key].push(value);
+                } else {
+                    submittedData[key] = value;
+                }
+            }
+
+            // Show success screen (Step 6)
+            nextStep(6);
+        }
+
+        function showDashboard() {
+            // Hide survey card
+            document.getElementById('survey-main-card').classList.add('hidden');
+            
+            // Show Dashboard
+            const dash = document.getElementById('dashboard-container');
+            dash.classList.remove('hidden');
+            
+            // Populate table with latest data
+            document.getElementById('tb-name').innerText = submittedData.customerName || 'Tiada Nama';
+            document.getElementById('tb-phone').innerText = submittedData.customerPhone || '-';
+            
+            document.getElementById('tb-last-purchase').innerText = submittedData.lastPurchase || '-';
+            
+            let repeatText = 'Tidak (No Repeat)';
+            if (submittedData.hasRepeatOrder === 'yes') {
+                repeatText = submittedData.repeatPlatform || 'Website';
+                if (repeatText === 'Other' && submittedData.otherPlatformInput) {
+                    repeatText = `Lain: ${submittedData.otherPlatformInput}`;
+                }
+            }
+            document.getElementById('tb-repeat').innerText = repeatText;
+            
+            const stillUsingBadge = document.getElementById('tb-still-using');
+            if(submittedData.stillUsing === 'yes') {
+                stillUsingBadge.innerText = 'Ya';
+                stillUsingBadge.className = 'px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold';
+            } else {
+                stillUsingBadge.innerText = 'Tidak';
+                stillUsingBadge.className = 'px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold';
+            }
+
+            document.getElementById('tb-website').innerText = submittedData.websiteExperience || '-';
+            document.getElementById('tb-website').title = submittedData.websiteExperience || '';
+            document.getElementById('tb-winback').innerText = submittedData.winBackIdea || '-';
+            document.getElementById('tb-winback').title = submittedData.winBackIdea || '';
+
+            // Initialize Dashboard Charts
+            initCharts();
+        }
+
+        function initCharts() {
+            // Chart 1: Platform Pie Chart
+            const ctxPie = document.getElementById('platformChart').getContext('2d');
+            
+            // Dynamic data injection logic (mocking increment based on submission)
+            let platformData = [45, 30, 15, 10]; // Base dummy data
+            if(submittedData.repeatPlatform === 'Website') platformData[0]++;
+            if(submittedData.repeatPlatform === 'TikTok Shop') platformData[1]++;
+            if(submittedData.repeatPlatform === 'Shopee') platformData[2]++;
+            if(submittedData.repeatPlatform === 'Other') platformData[3]++;
+
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Website', 'TikTok Shop', 'Shopee', 'Other'],
+                    datasets: [{
+                        data: platformData,
+                        backgroundColor: ['#4f46e5', '#000000', '#f97316', '#9ca3af'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Chart 2: Triggers Bar Chart
+            const ctxBar = document.getElementById('triggerChart').getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Promo/Price', 'Voucher', 'Free Ship', 'TikTok Live', 'Reminder', 'Benefits'],
+                    datasets: [{
+                        label: 'Kekerapan Dipilih',
+                        data: [120, 95, 110, 60, 45, 80],
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
