@@ -330,30 +330,6 @@
             </div>
         </div>
 
-        <!-- Latest Submission Table -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-6 border-b border-gray-100 bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-800">Maklum Balas Terkini (Baru Masuk)</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-white text-gray-500 text-sm border-b">
-                            <th class="p-4 font-medium min-w-[150px]">Pelanggan</th>
-                            <th class="p-4 font-medium">Pembelian Terakhir</th>
-                            <th class="p-4 font-medium">Repeat Platform</th>
-                            <th class="p-4 font-medium">Masih Guna?</th>
-                            <th class="p-4 font-medium">Isu Website</th>
-                            <th class="p-4 font-medium">Cadangan Win-back</th>
-                            <th class="p-4 font-medium text-center">Tindakan</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body" class="text-gray-700 text-sm divide-y divide-gray-100">
-                        <!-- Data akan dimasukkan di sini secara automatik oleh JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -362,7 +338,6 @@
         let activeSubmissionId = null;
         let currentStep = 1;
         
-        let allSubmissions = []; // Menyimpan kesemua data borang dalam memori
         let platformChartInstance = null;
         let triggerChartInstance = null;
 
@@ -541,8 +516,6 @@
                 if (!result.success) {
                     throw new Error(result.message || 'Data tidak dapat disimpan.');
                 }
-
-                allSubmissions.push(currentSubmission);
                 activeSubmissionId = null;
                 nextStep(6);
                 form.reset();
@@ -578,111 +551,79 @@
             document.getElementById('notUsingReasonSection').classList.add('hidden');
         }
 
-        function showDashboard() {
-            // Hide survey card
+        async function showDashboard() {
             document.getElementById('survey-main-card').classList.add('hidden');
-            
-            // Show Dashboard
+
             const dash = document.getElementById('dashboard-container');
             dash.classList.remove('hidden');
-            
-            updateDashboardUI();
+
+            setDashboardLoadingState();
+
+            try {
+                const response = await fetch(
+                    GOOGLE_SHEETS_API_URL +
+                    '?action=dashboard&_=' + Date.now()
+                );
+
+                if (!response.ok) {
+                    throw new Error('Dashboard server tidak dapat dihubungi.');
+                }
+
+                const result = await response.json();
+
+                if (!result.success || !result.dashboard) {
+                    throw new Error(result.message || 'Statistik tidak tersedia.');
+                }
+
+                updateDashboardUI(result.dashboard);
+
+            } catch (error) {
+                console.error('Dashboard loading failed:', error);
+                document.getElementById('stat-total').innerText = '-';
+                document.getElementById('stat-repeat').innerText = '-';
+                document.getElementById('stat-platform').innerText = '-';
+
+                alert(
+                    'Dashboard belum dapat dimuatkan. Pastikan Apps Script telah ' +
+                    'dikemas kini dan deploy sebagai versi baharu.\n\n' +
+                    error.message
+                );
+            }
         }
 
-        function updateDashboardUI() {
-            const total = allSubmissions.length;
-            document.getElementById('stat-total').innerText = total;
+        function setDashboardLoadingState() {
+            document.getElementById('stat-total').innerText = '...';
+            document.getElementById('stat-repeat').innerText = '...';
+            document.getElementById('stat-platform').innerText = '...';
+        }
 
-            let repeatCount = 0;
-            let platforms = {};
-            let triggers = {
-                'Better price/promotion': 0, 'Voucher': 0, 'Free shipping': 0,
-                'TikTok Live': 0, 'Reminder': 0, 'Product benefits': 0,
-                'Stock running out': 0, 'Easier ordering': 0
-            };
+        function updateDashboardUI(stats) {
+            document.getElementById('stat-total').innerText =
+                Number(stats.total || 0);
 
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = ''; // Kosongkan jadual lama
+            document.getElementById('stat-repeat').innerText =
+                Number(stats.repeatRate || 0) + '%';
 
-            // Hasilkan baris (Row) untuk setiap survey yang dimasukkan
-            allSubmissions.forEach((sub, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "bg-indigo-50/30 hover:bg-indigo-50 transition";
-                
-                let repeatText = 'Tidak (No Repeat)';
-                if (sub.hasRepeatOrder === 'yes') {
-                    repeatCount++;
-                    repeatText = sub.repeatPlatform || 'Website';
-                    if (repeatText === 'Other' && sub.otherPlatformInput) {
-                        repeatText = `Lain: ${sub.otherPlatformInput}`;
-                    }
-                    
-                    // Rekod statistik platform
-                    let platKey = sub.repeatPlatform || 'Website';
-                    platforms[platKey] = (platforms[platKey] || 0) + 1;
-                }
+            document.getElementById('stat-platform').innerText =
+                stats.topPlatform || '-';
 
-                // Rekod statistik triggers (Punca pembelian)
-                if (sub.reorderTrigger) {
-                    let subTriggers = Array.isArray(sub.reorderTrigger) ? sub.reorderTrigger : [sub.reorderTrigger];
-                    subTriggers.forEach(t => {
-                        if (triggers[t] !== undefined) triggers[t]++;
-                    });
-                }
+            const platforms = stats.platformCounts || {};
+            const triggers = stats.triggerCounts || {};
 
-                let stillUsingBadge = sub.stillUsing === 'yes' 
-                    ? `<span class="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold">Ya</span>`
-                    : `<span class="px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold">Tidak</span>`;
-
-                tr.innerHTML = `
-                    <td class="p-4 font-medium text-gray-900">
-                        <div class="font-bold">${sub.customerName || '-'}</div>
-                        <div class="text-xs text-gray-500 font-normal mt-1">${sub.customerPhone || '-'}</div>
-                    </td>
-                    <td class="p-4 font-medium text-indigo-700">${sub.lastPurchase || '-'}</td>
-                    <td class="p-4">${repeatText}</td>
-                    <td class="p-4">${stillUsingBadge}</td>
-                    <td class="p-4 max-w-xs truncate" title="${sub.websiteExperience || ''}">${sub.websiteExperience || '-'}</td>
-                    <td class="p-4 max-w-xs truncate" title="${sub.winBackIdea || ''}">${sub.winBackIdea || '-'}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="deleteRow(this, ${index})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition" title="Padam Rekod">
-                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Kira peratusan Repeat Order
-            const repeatRate = total > 0 ? Math.round((repeatCount / total) * 100) : 0;
-            document.getElementById('stat-repeat').innerText = `${repeatRate}%`;
-
-            // Cari Platform Paling Top
-            let topPlatform = "-";
-            let maxCount = 0;
-            for (let p in platforms) {
-                if (platforms[p] > maxCount) {
-                    maxCount = platforms[p];
-                    topPlatform = p;
-                }
-            }
-            document.getElementById('stat-platform').innerText = topPlatform;
-
-            // Update Data untuk Carta
             const platformData = [
-                platforms['Website'] || 0,
-                platforms['TikTok Shop'] || 0,
-                platforms['Shopee'] || 0,
-                platforms['Agent'] || 0
+                Number(platforms.Website || 0),
+                Number(platforms['TikTok Shop'] || 0),
+                Number(platforms.Shopee || 0),
+                Number(platforms.Other || 0)
             ];
-            
+
             const triggerData = [
-                triggers['Better price/promotion'] || 0,
-                triggers['Voucher'] || 0,
-                triggers['Free shipping'] || 0,
-                triggers['TikTok Live'] || 0,
-                triggers['Reminder'] || 0,
-                triggers['Product benefits'] || 0
+                Number(triggers['Better price/promotion'] || 0),
+                Number(triggers.Voucher || 0),
+                Number(triggers['Free shipping'] || 0),
+                Number(triggers['TikTok Live'] || 0),
+                Number(triggers.Reminder || 0),
+                Number(triggers['Product benefits'] || 0)
             ];
 
             initCharts(platformData, triggerData);
@@ -738,19 +679,6 @@
             });
         }
 
-        // Fungsi memadam baris dari sistem memori & UI Dashboard
-        function deleteRow(btn, index) {
-            const row = btn.closest('tr');
-            
-            // Animasi hilangkan baris
-            row.style.transition = "all 0.3s ease";
-            row.style.opacity = "0";
-            
-            setTimeout(() => {
-                allSubmissions.splice(index, 1); // Buang data dari memori (array)
-                updateDashboardUI(); // Render semula dashboard (Auto kira balik stat)
-            }, 300);
-        }
     </script>
 </body>
 </html>
