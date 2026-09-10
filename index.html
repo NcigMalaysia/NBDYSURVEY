@@ -361,16 +361,12 @@
             </div>
 
             <section class="bg-white p-5 rounded-2xl border border-slate-200 mb-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                    <div><h2 class="text-lg font-semibold text-slate-900">Maklum Balas Bertulis</h2><p class="text-sm text-slate-500">Respons terkini tanpa nama dan nombor telefon pelanggan.</p></div>
-                    <select id="feedback-type" onchange="renderFeedback()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
-                        <option value="all">Semua respons</option><option value="noRepeatReasons">Sebab tidak repeat</option><option value="notUsingReasons">Sebab berhenti guna</option><option value="productExperiences">Pengalaman produk</option><option value="websiteExperiences">Pengalaman website</option><option value="winBackIdeas">Cadangan win-back</option>
-                    </select>
-                </div>
-                <div id="feedback-list" class="dashboard-scroll grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[34rem] overflow-y-auto pr-1"></div>
+                <div class="mb-4"><h2 class="text-lg font-semibold text-slate-900">Liputan Maklum Balas Bertulis</h2><p class="text-sm text-slate-500">Jumlah pelanggan yang memberikan jawapan bagi setiap soalan terbuka.</p></div>
+                <div id="text-response-coverage" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
+                <div class="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">Teks penuh, nama dan nombor telefon kekal di Google Sheet untuk melindungi data pelanggan.</div>
             </section>
 
-            <div class="text-xs text-slate-400 text-center">Maklumat peribadi pelanggan tidak dipaparkan dalam dashboard awam ini.</div>
+            <div class="text-xs text-slate-400 text-center">Dashboard awam hanya memaparkan statistik agregat tanpa maklumat peribadi.</div>
         </div>
     </div>
 
@@ -381,7 +377,6 @@
         let currentStep = 1;
         
         const dashboardCharts = {};
-        let dashboardFeedback = {};
 
         // Custom validation function before moving to next step
         function validateAndNext(targetStep, currentStepId) {
@@ -657,8 +652,8 @@
         function setDashboardErrorState() {
             ['stat-total', 'stat-repeat', 'stat-using', 'stat-platform', 'stat-trigger', 'stat-latest']
                 .forEach(id => document.getElementById(id).textContent = '–');
-            document.getElementById('feedback-list').innerHTML =
-                '<div class="md:col-span-2 text-center text-slate-500 py-10">Data belum dapat dimuatkan.</div>';
+            document.getElementById('text-response-coverage').innerHTML =
+                '<div class="col-span-full text-center text-slate-500 py-6">Data belum dapat dimuatkan.</div>';
         }
 
         function updateDashboardUI(stats) {
@@ -670,8 +665,7 @@
             document.getElementById('stat-latest').textContent = stats.latestResponse || 'Tiada data';
             document.getElementById('stat-period').textContent = stats.periodLabel || 'Semua tempoh';
 
-            dashboardFeedback = stats.feedback || {};
-            renderFeedback();
+            renderTextCoverage(stats.textResponseCounts || {});
             renderDashboardCharts(stats);
         }
 
@@ -745,8 +739,7 @@
             };
         }
 
-        function renderFeedback() {
-            const type = document.getElementById('feedback-type').value;
+        function renderTextCoverage(counts) {
             const labels = {
                 noRepeatReasons: 'Sebab tidak repeat',
                 notUsingReasons: 'Sebab berhenti guna',
@@ -754,40 +747,19 @@
                 websiteExperiences: 'Pengalaman website',
                 winBackIdeas: 'Cadangan win-back'
             };
-            let items = [];
-            Object.keys(labels).forEach(key => {
-                if (type === 'all' || type === key) {
-                    (dashboardFeedback[key] || []).forEach(entry => items.push({ ...entry, category: labels[key] }));
-                }
-            });
-            items.sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
-
-            const list = document.getElementById('feedback-list');
-            list.replaceChildren();
-            if (!items.length) {
-                const empty = document.createElement('div');
-                empty.className = 'md:col-span-2 text-center text-slate-500 py-10';
-                empty.textContent = 'Tiada respons bertulis untuk filter ini.';
-                list.appendChild(empty);
-                return;
-            }
-
-            items.slice(0, 100).forEach(item => {
-                const card = document.createElement('article');
-                card.className = 'feedback-card bg-slate-50 rounded-xl p-4';
-                const meta = document.createElement('div');
-                meta.className = 'flex justify-between gap-3 text-xs text-slate-500 mb-2';
-                const category = document.createElement('span');
-                category.className = 'font-semibold text-indigo-700';
-                category.textContent = item.category;
-                const time = document.createElement('time');
-                time.textContent = item.timestamp || '';
-                const text = document.createElement('p');
-                text.className = 'text-sm text-slate-700 leading-relaxed whitespace-pre-wrap';
-                text.textContent = item.text || '';
-                meta.append(category, time);
-                card.append(meta, text);
-                list.appendChild(card);
+            const container = document.getElementById('text-response-coverage');
+            container.replaceChildren();
+            Object.entries(labels).forEach(([key, label]) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 border border-slate-200 rounded-xl p-4';
+                const value = document.createElement('div');
+                value.className = 'text-2xl font-bold text-slate-900';
+                value.textContent = Number(counts[key] || 0).toLocaleString('ms-MY');
+                const title = document.createElement('div');
+                title.className = 'text-sm text-slate-500 mt-1';
+                title.textContent = label;
+                card.append(value, title);
+                container.appendChild(card);
             });
         }
 
