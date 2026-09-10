@@ -358,6 +358,8 @@
 
     <script>
         const totalSteps = 5; // Total logic steps (excluding success)
+        const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbx3jM8t_vBhRpN_MNt0vhu5UjS7TvoNujKl_xIwTUk2AcwcZADyoQsuzyZnnnCUq3c3pQ/exec";
+        let activeSubmissionId = null;
         let currentStep = 1;
         
         let allSubmissions = []; // Menyimpan kesemua data borang dalam memori
@@ -483,12 +485,23 @@
             }
         }
 
-        function submitSurvey() {
+        function createSubmissionId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+
+            return 'survey-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12);
+        }
+
+        async function submitSurvey() {
             const form = document.getElementById('surveyForm');
+            const submitButton = form.querySelector('button[type="submit"]');
+
+            if (submitButton.disabled) return;
+
             const formData = new FormData(form);
             let currentSubmission = {};
-            
-            // Collect form data into object (Menguruskan checkbox / nilai berganda)
+
             for (let [key, value] of formData.entries()) {
                 if (currentSubmission[key]) {
                     if (!Array.isArray(currentSubmission[key])) {
@@ -500,12 +513,52 @@
                 }
             }
 
-            // Masukkan data baru ke dalam array senarai borang
-            allSubmissions.push(currentSubmission);
+            // Kekalkan ID yang sama jika pengguna retry selepas masalah rangkaian.
+            activeSubmissionId = activeSubmissionId || createSubmissionId();
+            currentSubmission.submissionId = activeSubmissionId;
 
-            // Show success screen (Step 6)
-            nextStep(6);
-            form.reset(); // Kosongkan borang untuk isian seterusnya
+            const originalButtonContent = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-60', 'cursor-not-allowed');
+            submitButton.textContent = 'Sedang menghantar...';
+
+            try {
+                // text/plain mengelakkan CORS preflight pada Google Apps Script.
+                const response = await fetch(GOOGLE_SHEETS_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(currentSubmission)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server tidak dapat dihubungi.');
+                }
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Data tidak dapat disimpan.');
+                }
+
+                allSubmissions.push(currentSubmission);
+                activeSubmissionId = null;
+                nextStep(6);
+                form.reset();
+
+            } catch (error) {
+                console.error('Survey submission failed:', error);
+                alert(
+                    'Jawapan belum berjaya disimpan. Sila periksa internet dan cuba lagi.\n\n' +
+                    error.message
+                );
+
+            } finally {
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-60', 'cursor-not-allowed');
+                submitButton.innerHTML = originalButtonContent;
+            }
         }
 
         function startNewSurvey() {
